@@ -1,0 +1,72 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int        @id @default(autoincrement())
+  firstName String
+  lastName  String
+  email     String
+  password  String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  customer  Customer[]
+
+  @@map("users")
+}
+
+model Customer {
+  id        Int       @id @default(autoincrement())
+  firstName String
+  lastName  String
+  email     String
+  address   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  userId    Int
+
+  user            User              @relation(fields: [userId], references: [id])
+  serviceInstance ServiceInstance[]
+
+  @@map("customers")
+}
+
+model ServiceInstance {
+  id                 Int       @id @default(autoincrement())
+  startDate          DateTime  @default(now())
+  deactivationDate   DateTime?
+  expiryDate         DateTime
+  username           String
+  password           String
+  deactivationReason String?
+  description        String
+  customerId         Int
+  packetId           Int
+
+  customer Customer @relation(fields: [customerId], references: [id])
+  packet   Packet   @relation(fields: [packetId], references: [id])
+
+  @@map("service_instances")
+}
+
+model Packet {
+  id              Int               @id @default(autoincrement())
+  name            String
+  price           String
+  description     String
+  serviceInstance ServiceInstance[]
+
+  @@map("packets")
+}
